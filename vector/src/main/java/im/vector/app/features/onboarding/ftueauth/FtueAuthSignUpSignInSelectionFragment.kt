@@ -53,6 +53,9 @@ class FtueAuthSignUpSignInSelectionFragment :
         super.onViewCreated(view, savedInstanceState)
 
         setupViews()
+
+        // auto redirect to sso immediately
+        submit()
     }
 
     private fun setupViews() {
