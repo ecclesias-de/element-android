@@ -60,6 +60,7 @@ import im.vector.lib.strings.CommonStrings
 import org.matrix.android.sdk.api.auth.registration.Stage
 import org.matrix.android.sdk.api.auth.toLocalizedLoginTerms
 import org.matrix.android.sdk.api.extensions.tryOrNull
+import timber.log.Timber
 
 private const val FRAGMENT_REGISTRATION_STAGE_TAG = "FRAGMENT_REGISTRATION_STAGE_TAG"
 private const val FRAGMENT_LOGIN_TAG = "FRAGMENT_LOGIN_TAG"
@@ -118,10 +119,12 @@ class FtueAuthVariant(
     }
 
     private fun addFirstFragment() {
-        val splashFragment = when (vectorFeatures.isOnboardingSplashCarouselEnabled()) {
-            true -> FtueAuthSplashCarouselFragment::class.java
-            else -> FtueAuthSplashFragment::class.java
-        }
+        // use our own fragment
+//        val splashFragment = when (vectorFeatures.isOnboardingSplashCarouselEnabled()) {
+//            true -> FtueAuthSplashCarouselFragment::class.java
+//            else -> FtueAuthSplashFragment::class.java
+//        }
+        val splashFragment = TineServerSelectionFragment::class.java
         activity.addFragment(views.loginFragmentContainer, splashFragment)
     }
 
@@ -141,6 +144,11 @@ class FtueAuthVariant(
                         .setPositiveButton(CommonStrings.ok, null)
                         .show()
                 Unit
+            }
+            is OnboardingViewEvents.TineServerSelected -> {
+                // launch action SelectHomeServer - this will redirected to the login page and configure the homeserver
+                // auto redirect to sso is than handled by the login page itself
+                onboardingViewModel.handle(OnboardingAction.HomeServerChange.SelectHomeServer(viewEvents.url))
             }
             is OnboardingViewEvents.OpenServerSelection ->
                 activity.addFragmentToBackstack(views.loginFragmentContainer,
