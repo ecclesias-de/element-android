@@ -477,10 +477,12 @@ class HomeActivityViewModel @AssistedInject constructor(
 
                     if (password == null) {
                         // Check this is not an SSO account
-                        if (session.homeServerCapabilitiesService().getHomeServerCapabilities().canChangePassword) {
-                            // Ask password to the user: Upgrade security
-                            _viewEvents.post(HomeActivityViewEvents.AskPasswordToInitCrossSigning(session.getUserOrDefault(session.myUserId).toMatrixItem()))
-                        }
+// We do not want the create a popup. User should only setup 4s, if they use e2e encrypted rooms.
+// Also we are using sso, but password auth is needed for matrix corporal and maybe for bot access.
+//                        if (session.homeServerCapabilitiesService().getHomeServerCapabilities().canChangePassword) {
+//                            // Ask password to the user: Upgrade security
+//                            _viewEvents.post(HomeActivityViewEvents.AskPasswordToInitCrossSigning(session.getUserOrDefault(session.myUserId).toMatrixItem()))
+//                        }
                         // Else (SSO) just ignore for the moment
                     } else {
                         // Try to initialize cross signing in background if possible
