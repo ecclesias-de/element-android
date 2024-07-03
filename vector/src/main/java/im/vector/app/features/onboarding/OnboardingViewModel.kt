@@ -17,6 +17,7 @@
 package im.vector.app.features.onboarding
 
 import android.content.Context
+import android.util.Patterns
 import com.airbnb.mvrx.MavericksViewModelFactory
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -53,6 +54,11 @@ import im.vector.app.features.onboarding.StartAuthenticationFlowUseCase.StartAut
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
+import okhttp3.Call
+import okhttp3.Callback
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.Response
 import org.matrix.android.sdk.api.MatrixPatterns
 import org.matrix.android.sdk.api.MatrixPatterns.getServerName
 import org.matrix.android.sdk.api.auth.AuthenticationService
@@ -71,6 +77,7 @@ import org.matrix.android.sdk.api.network.ssl.Fingerprint
 import org.matrix.android.sdk.api.session.Session
 import org.matrix.android.sdk.api.util.BuildVersionSdkIntProvider
 import timber.log.Timber
+import java.io.IOException
 import java.util.UUID
 import java.util.concurrent.CancellationException
 
@@ -951,6 +958,51 @@ class OnboardingViewModel @AssistedInject constructor(
 
     private fun cancelWaitForEmailValidation() {
         emailVerificationPollingJob = null
+    }
+
+    /**
+     * Configure homeServerUrl from email address:
+     *
+     * Checks if /.well-known/matrix/client is set for the email hostname. If the http request is successful configure
+     * https://<email hostname as home server url>. The validity off the response is not checked.
+     * Element will resolve the configured homeserver url to the real homeserver url. Therefore the /.well-known/matrix/client
+     * needs to be configured correctly. (For this reason we check for the existence of client and not server.)
+     */
+    fun tineServerSelectSubmit(email: String) {
+        // show loading indicator
+        setState { copy(isLoading = true) }
+        Timber.i(email)
+
+        if (! Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            setState { copy(isLoading = false) }
+            _viewEvents.post(OnboardingViewEvents.Failure(Exception(stringProvider.getString(R.string.auth_invalid_email))))
+            return
+        }
+
+        val hostname = email.split('@')[1]
+        val request = Request.Builder().url("https://%s/.well-known/matrix/client".format(hostname)).build()
+        // request needs to be run async, it is not allowed on the main thread
+        OkHttpClient().newCall(request).enqueue(object: Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                Timber.i(e)
+                setState { copy(isLoading = false) }
+                _viewEvents.post(OnboardingViewEvents.Failure(Exception(stringProvider.getString(R.string.autodiscover_well_known_error))))
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                if (!response.isSuccessful) {
+                    Timber.i(response.body!!.string())
+                    setState { copy(isLoading = false) }
+                    _viewEvents.post(OnboardingViewEvents.Failure(Exception(stringProvider.getString(R.string.autodiscover_well_known_error))))
+                    return
+                }
+
+                Timber.i(response.body!!.string())
+                setState { copy(isLoading = false) }
+                // we need to post an event to call handle(SelectedHomeServer), as we do not run in the main thread
+                _viewEvents.post(OnboardingViewEvents.TineServerSelected("https://%s".format(hostname)))
+            }
+        })
     }
 }
 

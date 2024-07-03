@@ -53,12 +53,16 @@ class StartAuthenticationFlowUseCase @Inject constructor(
     )
 
     private fun LoginFlowResult.findPreferredLoginMode() = when {
-        supportedLoginTypes.containsAllItems(LoginFlowTypes.SSO, LoginFlowTypes.PASSWORD) -> LoginMode.SsoAndPassword(
-                ssoIdentityProviders.toSsoState(),
-                hasOidcCompatibilityFlow
-        )
+        // We only want to allow sso. Also if password is available, therefor we disable the combined sso and password flow here
+//        supportedLoginTypes.containsAllItems(LoginFlowTypes.SSO, LoginFlowTypes.PASSWORD) -> LoginMode.SsoAndPassword(
+//                ssoIdentityProviders.toSsoState(),
+//                hasOidcCompatibilityFlow
+//        )
         supportedLoginTypes.contains(LoginFlowTypes.SSO) -> LoginMode.Sso(ssoIdentityProviders.toSsoState(), hasOidcCompatibilityFlow)
-        supportedLoginTypes.contains(LoginFlowTypes.PASSWORD) -> LoginMode.Password
+        // Password login mode dose not work, as the login page calls submit() on load. This is done to automatically redirect to sso.
+        // If password login mode is needed, this needs to be fixed.
+        // see /vector/src/main/java/im/vector/app/features/onboarding/ftueauth/FtueAuthSignUpSignInSelectionFragment.kt search auto redirect to sso immediately
+        //supportedLoginTypes.contains(LoginFlowTypes.PASSWORD) -> LoginMode.Password
         else -> LoginMode.Unsupported
     }
 
