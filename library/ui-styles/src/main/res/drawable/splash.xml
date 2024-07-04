@@ -4,13 +4,18 @@
     android:opacity="opaque">
 
     <!-- Background color -->
-    <item android:drawable="?colorPrimary" />
+<!--    <item android:drawable="?colorPrimary" />-->
+    <item>
+        <shape xmlns:android="http://schemas.android.com/apk/res/android">
+            <solid android:color="#002333" />
+        </shape>
+    </item>
 
     <!-- Centered logo -->
     <item>
         <bitmap
             android:gravity="center"
-            android:src="@drawable/element_splash_white" />
+            android:src="@drawable/ecclesias_logo" />
     </item>
 
 </layer-list>

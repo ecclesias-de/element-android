@@ -5,8 +5,12 @@
     <style name="Theme.Vector.Launcher" parent="Theme.MaterialComponents.Light.NoActionBar">
         <item name="android:windowBackground">@drawable/splash</item>
         <item name="colorPrimary">@color/element_accent_light</item>
-        <item name="android:statusBarColor">@color/element_accent_light</item>
-        <item name="android:navigationBarColor">@color/element_accent_light</item>
+        <!-- Change color of statusBar and navBar for initial loading screen, to be equal to its new background color. -->
+        <!-- I have change many place, if this change effects something else, but it seems not to. -->
+        <!-- <item name="android:statusBarColor">@color/element_accent_light</item> -->
+        <!-- <item name="android:navigationBarColor">@color/element_accent_light</item> -->
+        <item name="android:statusBarColor">#002333</item>
+        <item name="android:navigationBarColor">#002333</item>
     </style>
 
     <style name="Theme.Vector.Black.AttachmentsPreview">
