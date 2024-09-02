@@ -50,6 +50,7 @@ import im.vector.app.features.mdm.MdmData
 import im.vector.app.features.mdm.MdmService
 import im.vector.app.features.onboarding.OnboardingAction.AuthenticateAction
 import im.vector.app.features.onboarding.StartAuthenticationFlowUseCase.StartAuthenticationResult
+import im.vector.lib.strings.CommonStrings
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
@@ -974,7 +975,7 @@ class OnboardingViewModel @AssistedInject constructor(
 
         if (! Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             setState { copy(isLoading = false) }
-            _viewEvents.post(OnboardingViewEvents.Failure(Exception(stringProvider.getString(R.string.auth_invalid_email))))
+            _viewEvents.post(OnboardingViewEvents.Failure(Exception(stringProvider.getString(CommonStrings.auth_invalid_email))))
             return
         }
 
@@ -985,14 +986,14 @@ class OnboardingViewModel @AssistedInject constructor(
             override fun onFailure(call: Call, e: IOException) {
                 Timber.i(e)
                 setState { copy(isLoading = false) }
-                _viewEvents.post(OnboardingViewEvents.Failure(Exception(stringProvider.getString(R.string.autodiscover_well_known_error))))
+                _viewEvents.post(OnboardingViewEvents.Failure(Exception(stringProvider.getString(CommonStrings.autodiscover_well_known_error))))
             }
 
             override fun onResponse(call: Call, response: Response) {
                 if (!response.isSuccessful) {
                     Timber.i(response.body!!.string())
                     setState { copy(isLoading = false) }
-                    _viewEvents.post(OnboardingViewEvents.Failure(Exception(stringProvider.getString(R.string.autodiscover_well_known_error))))
+                    _viewEvents.post(OnboardingViewEvents.Failure(Exception(stringProvider.getString(CommonStrings.autodiscover_well_known_error))))
                     return
                 }
 
