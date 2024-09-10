@@ -56,7 +56,7 @@ class FtueAuthSignUpSignInSelectionFragment :
         setupViews()
 
         // auto redirect to sso immediately
-        submit()
+        autoSubmitSso()
     }
 
     private fun setupViews() {
@@ -125,6 +125,12 @@ class FtueAuthSignUpSignInSelectionFragment :
                 views.loginSignupSigninSubmit.text = getString(CommonStrings.login_signup)
                 views.loginSignupSigninSignIn.isVisible = true
             }
+        }
+    }
+
+    private fun autoSubmitSso() = withState(viewModel) { state ->
+        if (state.selectedHomeserver.preferredLoginMode is LoginMode.Sso) {
+            submit()
         }
     }
 
