@@ -59,6 +59,8 @@ import okhttp3.Callback
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
+import org.json.JSONException
+import org.json.JSONObject
 import org.matrix.android.sdk.api.MatrixPatterns
 import org.matrix.android.sdk.api.MatrixPatterns.getServerName
 import org.matrix.android.sdk.api.auth.AuthenticationService
@@ -997,10 +999,21 @@ class OnboardingViewModel @AssistedInject constructor(
                     return
                 }
 
-                Timber.i(response.body!!.string())
+                val wellknownEncoded = response.body!!.string()
+                val wellknown = JSONObject(wellknownEncoded)
+                Timber.i(wellknownEncoded)
+                val homeserver: String
+                try {
+                    homeserver = wellknown.getJSONObject("m.homeserver").getString("base_url")
+                } catch (e: JSONException) {
+                    Timber.i("Could not read [m.homeserver][base_url] from well-known")
+                    setState { copy(isLoading = false) }
+                    _viewEvents.post(OnboardingViewEvents.Failure(Exception(stringProvider.getString(CommonStrings.autodiscover_well_known_error))))
+                    return
+                }
                 setState { copy(isLoading = false) }
                 // we need to post an event to call handle(SelectedHomeServer), as we do not run in the main thread
-                _viewEvents.post(OnboardingViewEvents.TineServerSelected("https://%s".format(hostname)))
+                _viewEvents.post(OnboardingViewEvents.TineServerSelected(homeserver))
             }
         })
     }
